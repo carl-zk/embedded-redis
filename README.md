@@ -68,7 +68,7 @@ RedisServer redisServer = RedisServer.builder()
   .redisExecProvider(customRedisProvider)
   .port(6379)
   .slaveOf("locahost", 6378)
-  .configFile("/path/to/your/redis.conf")
+  .confFile("/path/to/your/redis.conf")
   .build();
 ```
 

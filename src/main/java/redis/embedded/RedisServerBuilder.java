@@ -1,7 +1,5 @@
 package redis.embedded;
 
-import com.google.common.base.Strings;
-import com.google.common.io.Files;
 import redis.embedded.exceptions.RedisBuildingException;
 
 import java.io.File;
@@ -68,7 +66,8 @@ public class RedisServerBuilder {
     public RedisServer build() {
         tryResolveConfAndExec();
         List<String> args = buildCommandArgs();
-        return new RedisServer(args, port);
+        // TODO
+        return null;
     }
 
     public void reset() {
@@ -90,12 +89,13 @@ public class RedisServerBuilder {
         if (redisConf == null && redisConfigBuilder != null) {
             File redisConfigFile = File.createTempFile(resolveConfigName(), ".conf");
             redisConfigFile.deleteOnExit();
-            Files.write(redisConfigBuilder.toString(), redisConfigFile, Charset.forName("UTF-8"));
+            //Files.write(redisConfigBuilder.toString(), redisConfigFile, Charset.forName("UTF-8"));
             redisConf = redisConfigFile.getAbsolutePath();
         }
 
         try {
-            executable = redisExecProvider.get();
+            // TODO
+            executable = null;
         } catch (Exception e) {
             throw new RedisBuildingException("Failed to resolve executable", e);
         }
@@ -109,7 +109,7 @@ public class RedisServerBuilder {
         List<String> args = new ArrayList<String>();
         args.add(executable.getAbsolutePath());
 
-        if (!Strings.isNullOrEmpty(redisConf)) {
+        if (redisConf != null && !"".equals(redisConf)) {
             args.add(redisConf);
         }
 

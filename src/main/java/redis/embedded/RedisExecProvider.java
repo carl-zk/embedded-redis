@@ -1,63 +1,97 @@
 package redis.embedded;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Maps;
 import redis.embedded.util.Architecture;
-import redis.embedded.util.JarUtil;
+import redis.embedded.util.FileUtils;
 import redis.embedded.util.OS;
 import redis.embedded.util.OsArchitecture;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+import java.util.HashMap;
 import java.util.Map;
 
 public class RedisExecProvider {
-    
-    private final Map<OsArchitecture, String> executables = Maps.newHashMap();
+
+    private final Map<OsArchitecture, Server2Config> executables = new HashMap<>();
 
     public static RedisExecProvider defaultProvider() {
         return new RedisExecProvider();
     }
-    
+
     private RedisExecProvider() {
         initExecutables();
     }
 
     private void initExecutables() {
-        executables.put(OsArchitecture.WINDOWS_x86, "redis-server-2.8.19.exe");
-        executables.put(OsArchitecture.WINDOWS_x86_64, "redis-server-2.8.19.exe");
-
-        executables.put(OsArchitecture.UNIX_x86, "redis-server-2.8.19-32");
-        executables.put(OsArchitecture.UNIX_x86_64, "redis-server-2.8.19");
-
-        executables.put(OsArchitecture.MAC_OS_X_x86, "redis-server-2.8.19.app");
-        executables.put(OsArchitecture.MAC_OS_X_x86_64, "redis-server-2.8.19.app");
+        executables.put(OsArchitecture.UNIX_x86_64, Server2Config.DEFAULT);
+        executables.put(OsArchitecture.MAC_OS_X_x86_64, Server2Config.DEFAULT);
     }
 
-    public RedisExecProvider override(OS os, String executable) {
-        Preconditions.checkNotNull(executable);
+    public RedisExecProvider override(OS os, String serverFile, String confFile, String cliFile, int port) {
         for (Architecture arch : Architecture.values()) {
-            override(os, arch, executable);
+            override(os, arch, serverFile, confFile, cliFile, port);
         }
         return this;
     }
 
-    public RedisExecProvider override(OS os, Architecture arch, String executable) {
-        Preconditions.checkNotNull(executable);
-        executables.put(new OsArchitecture(os, arch), executable);
+    public RedisExecProvider override(OS os, Architecture arch, String serverFile, String confFile, String cliFile, int port) {
+        executables.put(new OsArchitecture(os, arch), new Server2Config(serverFile, confFile, cliFile, port));
         return this;
     }
-    
-    public File get() throws IOException {
+
+    public Server2Config get() {
         OsArchitecture osArch = OsArchitecture.detect();
-        String executablePath = executables.get(osArch);
-         return fileExists(executablePath) ?
-                new File(executablePath) :
-                JarUtil.extractExecutableFromJar(executablePath);
-        
+        return executables.get(osArch);
     }
 
-    private boolean fileExists(String executablePath) {
-        return new File(executablePath).exists();
+    public static class Server2Config {
+
+        public static final Server2Config DEFAULT = buildDefault();
+
+        public File serverFile;
+        public File confFile;
+        public File cliFile;
+
+        private int port;
+
+        private Server2Config() {
+        }
+
+        public Server2Config(String serverFile, String confFile, String cliFile, int port) {
+            this.serverFile = new File(serverFile);
+            this.confFile = new File(confFile);
+            this.cliFile = new File(cliFile);
+            this.port = port;
+        }
+
+
+        private static final Server2Config buildDefault() {
+            Server2Config sc = new Server2Config();
+            File tmpPath = FileUtils.createTempDir();
+            try {
+                sc.serverFile = extractFileFromJar(tmpPath, "redis-server-4.0.9");
+                sc.confFile = extractFileFromJar(tmpPath, "redis.conf");
+                sc.cliFile = extractFileFromJar(tmpPath, "redis-cli-4.0.9");
+                sc.port = 6379;
+
+                sc.serverFile.setExecutable(true);
+                sc.cliFile.setExecutable(true);
+                return sc;
+            } catch (IOException e) {
+                throw new Error(e);
+            }
+        }
+
+        public int getPort() {
+            return port;
+        }
+
+        private static final File extractFileFromJar(File toDir, String fileName) throws IOException {
+            File tempFile = new File(toDir, fileName);
+            URL jarFile = Thread.currentThread().getContextClassLoader().getResource(fileName);
+            FileUtils.copyFromURL(jarFile, tempFile);
+            return tempFile;
+        }
     }
 }

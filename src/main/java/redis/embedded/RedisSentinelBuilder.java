@@ -1,12 +1,9 @@
 package redis.embedded;
 
-import com.google.common.base.Preconditions;
-import com.google.common.io.Files;
 import redis.embedded.exceptions.RedisBuildingException;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -105,7 +102,8 @@ public class RedisSentinelBuilder {
             if (sentinelConf == null) {
                 resolveSentinelConf();
             }
-            executable = redisExecProvider.get();
+            // TODO
+            executable = null;
         } catch (Exception e) {
             throw new RedisBuildingException("Could not build sentinel instance", e);
         }
@@ -132,7 +130,7 @@ public class RedisSentinelBuilder {
 
         File redisConfigFile = File.createTempFile(resolveConfigName(), ".conf");
         redisConfigFile.deleteOnExit();
-        Files.write(configString, redisConfigFile, Charset.forName("UTF-8"));
+        //Files.write(configString, redisConfigFile, Charset.forName("UTF-8"));
         sentinelConf = redisConfigFile.getAbsolutePath();
     }
 
@@ -141,9 +139,8 @@ public class RedisSentinelBuilder {
     }
 
     private List<String> buildCommandArgs() {
-        Preconditions.checkNotNull(sentinelConf);
 
-        List<String> args = new ArrayList<String>();
+        List<String> args = new ArrayList<>();
         args.add(executable.getAbsolutePath());
         args.add(sentinelConf);
         args.add("--sentinel");

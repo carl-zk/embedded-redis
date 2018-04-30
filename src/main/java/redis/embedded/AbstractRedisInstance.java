@@ -1,79 +1,40 @@
 package redis.embedded;
 
 import redis.embedded.exceptions.EmbeddedRedisException;
+import redis.embedded.RedisExecProvider.Server2Config;
+import redis.embedded.util.FileUtils;
 
 import java.io.*;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.apache.commons.io.IOUtils;
-
 abstract class AbstractRedisInstance implements Redis {
-    protected List<String> args = Collections.emptyList();
+    private Server2Config sc;
     private volatile boolean active = false;
-	private Process redisProcess;
-    private final int port;
+    private Process redisProcess;
 
     private ExecutorService executor;
-
-    protected AbstractRedisInstance(int port) {
-        this.port = port;
-    }
 
     @Override
     public boolean isActive() {
         return active;
     }
 
-	@Override
+    @Override
     public synchronized void start() throws EmbeddedRedisException {
         if (active) {
             throw new EmbeddedRedisException("This redis server instance is already running...");
         }
         try {
-            redisProcess = createRedisProcessBuilder().start();
+            redisProcess = createStartProcessBuilder().start();
             logErrors();
-            awaitRedisServerReady();
+            isServerStarted();
             active = true;
         } catch (IOException e) {
             throw new EmbeddedRedisException("Failed to start Redis instance", e);
         }
-    }
-
-    private void logErrors() {
-        final InputStream errorStream = redisProcess.getErrorStream();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(errorStream));
-        Runnable printReaderTask = new PrintReaderRunnable(reader);
-        executor = Executors.newSingleThreadExecutor();
-        executor.submit(printReaderTask);
-    }
-
-    private void awaitRedisServerReady() throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(redisProcess.getInputStream()));
-        try {
-            String outputLine;
-            do {
-                outputLine = reader.readLine();
-                if (outputLine == null) {
-                    //Something goes wrong. Stream is ended before server was activated.
-                    throw new RuntimeException("Can't start redis server. Check logs for details.");
-                }
-            } while (!outputLine.matches(redisReadyPattern()));
-        } finally {
-            IOUtils.closeQuietly(reader);
-        }
-    }
-
-    protected abstract String redisReadyPattern();
-
-    private ProcessBuilder createRedisProcessBuilder() {
-        File executable = new File(args.get(0));
-        ProcessBuilder pb = new ProcessBuilder(args);
-        pb.directory(executable.getParentFile());
-        return pb;
+        System.out.println("redis server started at port : " + getPort());
     }
 
     @Override
@@ -82,10 +43,66 @@ abstract class AbstractRedisInstance implements Redis {
             if (executor != null && !executor.isShutdown()) {
                 executor.shutdown();
             }
-            redisProcess.destroy();
+            try {
+                createStopProcessBuilder().start();
+            } catch (Exception e) {
+                throw new EmbeddedRedisException("failed to stop server", e);
+            }
             tryWaitFor();
             active = false;
+            if (sc == Server2Config.DEFAULT) {
+                try {
+                    FileUtils.deleteDirectory(sc.serverFile.getParentFile());
+                } catch (IOException e) {
+                    System.out.println(e);
+                }
+            }
+            System.out.println("redis server stopped.");
         }
+    }
+
+    private void logErrors() {
+        final InputStream errorStream = redisProcess.getErrorStream();
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(errorStream));
+        Runnable printReaderTask = new PrintReaderRunnable(reader);
+        executor = Executors.newSingleThreadExecutor();
+        executor.submit(printReaderTask);
+    }
+
+    private void isServerStarted() throws IOException {
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(redisProcess.getInputStream()))) {
+            String outputLine;
+            do {
+                outputLine = reader.readLine();
+                if (outputLine == null) {
+                    //Something goes wrong. Stream is ended before server was activated.
+                    throw new RuntimeException("Can't start redis server. Check logs for details.");
+                }
+            } while (!outputLine.matches(redisReadyPattern()));
+
+        }
+    }
+
+    protected abstract String redisReadyPattern();
+
+    public void setSc(Server2Config sc) {
+        this.sc = sc;
+    }
+
+    private ProcessBuilder createStartProcessBuilder() {
+        File executable = sc.serverFile;
+        ProcessBuilder pb = new ProcessBuilder(sc.serverFile.getAbsolutePath(), sc.confFile.getAbsolutePath());
+        pb.directory(executable.getParentFile());
+        return pb;
+    }
+
+    private ProcessBuilder createStopProcessBuilder() {
+        File executable = sc.cliFile;
+        ProcessBuilder pb = new ProcessBuilder(sc.cliFile.getAbsolutePath(), "-p", String.valueOf(sc.getPort()), "shutdown");
+        pb.directory(executable.getParentFile());
+        return pb;
     }
 
     private void tryWaitFor() {
@@ -96,9 +113,8 @@ abstract class AbstractRedisInstance implements Redis {
         }
     }
 
-    @Override
-    public List<Integer> ports() {
-        return Arrays.asList(port);
+    public int getPort() {
+        return sc.getPort();
     }
 
     private static class PrintReaderRunnable implements Runnable {
@@ -112,7 +128,10 @@ abstract class AbstractRedisInstance implements Redis {
             try {
                 readLines();
             } finally {
-                IOUtils.closeQuietly(reader);
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                }
             }
         }
 

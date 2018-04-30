@@ -18,16 +18,17 @@ public class SpringDataConnectivityTest {
 
     @Before
     public void setUp() throws Exception {
-        redisServer = new RedisServer(6379);
-        redisServer.start();
-
-        JedisShardInfo shardInfo = new JedisShardInfo("localhost", 6379);
-        connectionFactory = new JedisConnectionFactory();
-        connectionFactory.setShardInfo(shardInfo);
-
-        template = new StringRedisTemplate();
-        template.setConnectionFactory(connectionFactory);
-        template.afterPropertiesSet();
+//        redisServer = new RedisServer();
+//        redisServer.start();
+//
+//        JedisShardInfo shardInfo = new JedisShardInfo("localhost", 6379);
+//        connectionFactory = new JedisConnectionFactory();
+//
+//        connectionFactory.setShardInfo(shardInfo);
+//
+//        template = new StringRedisTemplate();
+//        template.setConnectionFactory(connectionFactory);
+//        template.afterPropertiesSet();
     }
 
     @Test

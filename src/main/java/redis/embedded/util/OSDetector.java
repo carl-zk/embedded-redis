@@ -67,7 +67,6 @@ public class OSDetector {
                     input.close();
                 }
             } catch (Exception ignored) {
-                // ignore
             }
         }
 
@@ -95,7 +94,6 @@ public class OSDetector {
                     input.close();
                 }
             } catch (Exception ignored) {
-                // ignore
             }
         }
 
