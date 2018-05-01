@@ -1,7 +1,7 @@
 package redis.embedded.ports;
 
 import org.junit.Test;
-import redis.embedded.exceptions.RedisBuildingException;
+import redis.embedded.EmbeddedRedisException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,7 +20,7 @@ public class PredefinedPortProviderTest {
 
         //when
         final List<Integer> returnedPorts = new ArrayList<Integer>();
-        for(int i = 0;i < ports.size(); i++) {
+        for (int i = 0; i < ports.size(); i++) {
             returnedPorts.add(provider.next());
         }
 
@@ -28,14 +28,14 @@ public class PredefinedPortProviderTest {
         assertEquals(ports, returnedPorts);
     }
 
-    @Test(expected = RedisBuildingException.class)
+    @Test(expected = EmbeddedRedisException.class)
     public void nextShouldThrowExceptionWhenRunOutsOfPorts() throws Exception {
         //given
         Collection<Integer> ports = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
         final PredefinedPortProvider provider = new PredefinedPortProvider(ports);
 
         //when
-        for(int i = 0;i < ports.size(); i++) {
+        for (int i = 0; i < ports.size(); i++) {
             provider.next();
         }
 

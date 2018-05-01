@@ -1,4 +1,4 @@
-package redis.embedded.exceptions;
+package redis.embedded;
 
 public class EmbeddedRedisException extends RuntimeException {
     public EmbeddedRedisException(String message, Throwable cause) {
@@ -7,5 +7,9 @@ public class EmbeddedRedisException extends RuntimeException {
 
     public EmbeddedRedisException(String message) {
         super(message);
+    }
+
+    public EmbeddedRedisException(Throwable cause) {
+        super(cause);
     }
 }

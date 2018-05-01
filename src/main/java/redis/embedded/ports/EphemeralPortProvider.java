@@ -1,7 +1,7 @@
 package redis.embedded.ports;
 
-import redis.embedded.PortProvider;
-import redis.embedded.exceptions.RedisBuildingException;
+import redis.embedded.EmbeddedRedisException;
+import redis.embedded.support.PortProvider;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -17,7 +17,7 @@ public class EphemeralPortProvider implements PortProvider {
             return port;
         } catch (IOException e) {
             //should not ever happen
-            throw new RedisBuildingException("Could not provide ephemeral port", e);
+            throw new EmbeddedRedisException("Could not provide ephemeral port", e);
         }
     }
 }

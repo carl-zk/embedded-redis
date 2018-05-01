@@ -4,6 +4,11 @@ import java.io.*;
 import java.net.URL;
 import java.nio.file.Files;
 
+/**
+ * 借鉴自 com.google.guava；
+ * 之所以未引入 guava 依赖是为了让 embedded-redis 作为一个独立的、不依赖其它组件的插件而存在。
+ */
+
 public abstract class FileUtils {
 
     public static void copyFromURL(URL from, File to) throws IOException {
@@ -15,6 +20,13 @@ public abstract class FileUtils {
                 write.write(buff, 0, len);
             }
         }
+    }
+
+    public static final File extractFileFromJar(File toDir, String fileName) throws IOException {
+        File tempFile = new File(toDir, fileName);
+        URL jarFile = Thread.currentThread().getContextClassLoader().getResource(fileName);
+        FileUtils.copyFromURL(jarFile, tempFile);
+        return tempFile;
     }
 
     public static void deleteDirectory(final File directory) throws IOException {
@@ -92,8 +104,4 @@ public abstract class FileUtils {
     }
 
     public static final int TEMP_DIR_ATTEMPTS = 100;
-
-    public static void main(String[] args) {
-        System.out.println(System.getProperty("java.io.tmpdir"));
-    }
 }

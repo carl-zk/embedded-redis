@@ -1,6 +1,6 @@
 package redis.embedded.ports;
 
-import redis.embedded.PortProvider;
+import redis.embedded.support.PortProvider;
 
 import java.util.concurrent.atomic.AtomicInteger;
 

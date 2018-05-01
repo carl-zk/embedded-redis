@@ -1,7 +1,7 @@
 package redis.embedded.ports;
 
-import redis.embedded.PortProvider;
-import redis.embedded.exceptions.RedisBuildingException;
+import redis.embedded.EmbeddedRedisException;
+import redis.embedded.support.PortProvider;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -19,7 +19,7 @@ public class PredefinedPortProvider implements PortProvider {
 
     public synchronized int next() {
         if (!current.hasNext()) {
-            throw new RedisBuildingException("Run out of Redis ports!");
+            throw new EmbeddedRedisException("Run out of Server ports!");
         }
         return current.next();
     }

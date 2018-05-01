@@ -65,7 +65,7 @@ RedisServer redisServer = new RedisServer(customProvider, 6379);
 You can also use fluent API to create RedisServer:
 ```java
 RedisServer redisServer = RedisServer.builder()
-  .redisExecProvider(customRedisProvider)
+  .singleServerProvider(customRedisProvider)
   .port(6379)
   .slaveOf("locahost", 6378)
   .confFile("/path/to/your/redis.conf")
@@ -75,7 +75,7 @@ RedisServer redisServer = RedisServer.builder()
 Or even create simple redis.conf file from scratch:
 ```java
 RedisServer redisServer = RedisServer.builder()
-  .redisExecProvider(customRedisProvider)
+  .singleServerProvider(customRedisProvider)
   .port(6379)
   .slaveOf("locahost", 6378)
   .setting("daemonize no")

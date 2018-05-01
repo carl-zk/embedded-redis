@@ -5,8 +5,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import redis.clients.jedis.JedisShardInfo;
 
 import static org.junit.Assert.assertEquals;
 

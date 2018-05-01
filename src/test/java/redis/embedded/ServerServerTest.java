@@ -2,14 +2,13 @@ package redis.embedded;
 
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
-import redis.embedded.exceptions.RedisBuildingException;
 
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class RedisServerTest {
+public class ServerServerTest {
 
     private RedisServer redisServer;
 
@@ -94,7 +93,7 @@ public class RedisServerTest {
 
     @Test
     public void shouldOverrideDefaultExecutable() throws Exception {
-//        RedisExecProvider customProvider = RedisExecProvider.defaultProvider()
+//        ServerProvider customProvider = ServerProvider.defaultTempProvider()
 //                .override(OS.UNIX, Architecture.x86, Resources.getResource("redis-server-2.8.19-32").getFile())
 //                .override(OS.UNIX, Architecture.x86_64, Resources.getResource("redis-server-2.8.19").getFile())
 //                .override(OS.WINDOWS, Architecture.x86, Resources.getResource("redis-server-2.8.19.exe").getFile())
@@ -106,9 +105,9 @@ public class RedisServerTest {
 //                .build();
     }
 
-    @Test(expected = RedisBuildingException.class)
+    @Test(expected = EmbeddedRedisException.class)
     public void shouldFailWhenBadExecutableGiven() throws Exception {
-//        RedisExecProvider buggyProvider = RedisExecProvider.defaultProvider()
+//        ServerProvider buggyProvider = ServerProvider.defaultTempProvider()
 //                .override(OS.UNIX, "some")
 //                .override(OS.WINDOWS, Architecture.x86, "some")
 //                .override(OS.WINDOWS, Architecture.x86_64, "some")

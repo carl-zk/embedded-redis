@@ -1,4 +1,4 @@
-package redis.embedded.util;
+package redis.embedded.enume;
 
 public enum OS {
     WINDOWS,

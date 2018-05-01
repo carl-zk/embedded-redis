@@ -5,7 +5,7 @@
 //import org.junit.Test;
 //import redis.clients.jedis.Jedis;
 //import redis.clients.jedis.JedisSentinelPool;
-//import redis.embedded.util.JedisUtil;
+//import redis.embedded.util.JedisUtils;
 //
 //import java.util.Arrays;
 //import java.util.List;
@@ -17,37 +17,37 @@
 //import static org.mockito.Mockito.verify;
 //
 //public class RedisClusterTest {
-//    private Redis sentinel1;
-//    private Redis sentinel2;
-//    private Redis master1;
-//    private Redis master2;
+//    private Server sentinel1;
+//    private Server sentinel2;
+//    private Server master1;
+//    private Server master2;
 //
 //    private RedisCluster instance;
 //
 //    @Before
 //    public void setUp() throws Exception {
-//        sentinel1 = mock(Redis.class);
-//        sentinel2 = mock(Redis.class);
-//        master1 = mock(Redis.class);
-//        master2 = mock(Redis.class);
+//        sentinel1 = mock(Server.class);
+//        sentinel2 = mock(Server.class);
+//        master1 = mock(Server.class);
+//        master2 = mock(Server.class);
 //    }
 //
 //
 //    @Test
 //    public void stopShouldStopEntireCluster() throws Exception {
 //        //given
-//        final List<Redis> sentinels = Arrays.asList(sentinel1, sentinel2);
-//        final List<Redis> servers = Arrays.asList(master1, master2);
+//        final List<Server> sentinels = Arrays.asList(sentinel1, sentinel2);
+//        final List<Server> servers = Arrays.asList(master1, master2);
 //        instance = new RedisCluster(sentinels, servers);
 //
 //        //when
 //        instance.stop();
 //
 //        //then
-//        for(Redis s : sentinels) {
+//        for(Server s : sentinels) {
 //            verify(s).stop();
 //        }
-//        for(Redis s : servers) {
+//        for(Server s : servers) {
 //            verify(s).stop();
 //        }
 //    }
@@ -55,18 +55,18 @@
 //    @Test
 //    public void startShouldStartEntireCluster() throws Exception {
 //        //given
-//        final List<Redis> sentinels = Arrays.asList(sentinel1, sentinel2);
-//        final List<Redis> servers = Arrays.asList(master1, master2);
+//        final List<Server> sentinels = Arrays.asList(sentinel1, sentinel2);
+//        final List<Server> servers = Arrays.asList(master1, master2);
 //        instance = new RedisCluster(sentinels, servers);
 //
 //        //when
 //        instance.start();
 //
 //        //then
-//        for(Redis s : sentinels) {
+//        for(Server s : sentinels) {
 //            verify(s).start();
 //        }
-//        for(Redis s : servers) {
+//        for(Server s : servers) {
 //            verify(s).start();
 //        }
 //    }
@@ -78,18 +78,18 @@
 //        given(sentinel2.isActive()).willReturn(true);
 //        given(master1.isActive()).willReturn(true);
 //        given(master2.isActive()).willReturn(true);
-//        final List<Redis> sentinels = Arrays.asList(sentinel1, sentinel2);
-//        final List<Redis> servers = Arrays.asList(master1, master2);
+//        final List<Server> sentinels = Arrays.asList(sentinel1, sentinel2);
+//        final List<Server> servers = Arrays.asList(master1, master2);
 //        instance = new RedisCluster(sentinels, servers);
 //
 //        //when
 //        instance.isActive();
 //
 //        //then
-//        for(Redis s : sentinels) {
+//        for(Server s : sentinels) {
 //            verify(s).isActive();
 //        }
-//        for(Redis s : servers) {
+//        for(Server s : servers) {
 //            verify(s).isActive();
 //        }
 //    }
@@ -176,7 +176,7 @@
 //        List<Integer> sentinelPorts = Arrays.asList(26381, 26382);
 //        final RedisCluster cluster = RedisCluster.builder().sentinelPorts(sentinelPorts).replicationGroup("ourmaster", 2).build();
 //        cluster.start();
-//        final Set<String> sentinelHosts = JedisUtil.portsToJedisHosts(sentinelPorts);
+//        final Set<String> sentinelHosts = JedisUtils.portsToJedisHosts(sentinelPorts);
 //
 //        //when
 //        JedisSentinelPool pool = null;
@@ -241,7 +241,7 @@
 //                .replicationGroup(master3, 1)
 //                .build();
 //        cluster.start();
-//        final Set<String> sentinelHosts = JedisUtil.sentinelHosts(cluster);
+//        final Set<String> sentinelHosts = JedisUtils.sentinelHosts(cluster);
 //
 //        //when
 //        JedisSentinelPool pool1 = null;
