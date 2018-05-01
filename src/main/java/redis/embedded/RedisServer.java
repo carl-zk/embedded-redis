@@ -1,7 +1,8 @@
 package redis.embedded;
 
-import redis.embedded.support.OsArch2Server;
+import redis.embedded.support.RedisConfProvider;
 import redis.embedded.support.ServerProvider;
+import redis.embedded.util.FileUtils;
 
 import java.io.*;
 import java.util.concurrent.ExecutorService;
@@ -16,27 +17,60 @@ public class RedisServer {
 
     private Process redisProcess;
     private ExecutorService printErrorExecutor;
-    private volatile Boolean active = false;
+    private volatile boolean active = false;
 
     public RedisServer() {
-        this(OsArch2Server.REDIS_CONF, 6379, true);
+        this(6379);
     }
 
-    public RedisServer(File redisConf, int port, boolean isTempServer) {
-        this.redisConf = redisConf;
+    public RedisServer(int port) {
+        this(null, port, true);
+    }
+
+    public RedisServer(File redisConf, int port) {
+        this(redisConf, port, false);
+    }
+
+    private RedisServer(File redisConf, int port, boolean isTempServer) {
+        this.redisConf = isTempServer ? RedisConfProvider.newRedisConf(FileUtils.createTempDir(), port) : redisConf;
         this.port = port;
         this.isTempServer = isTempServer;
     }
 
     public synchronized void start() throws EmbeddedRedisException {
-        ServerProvider.start(this);
+        if (active) {
+            throw new EmbeddedRedisException("This redis server instance is already running...");
+        }
+        try {
+            redisProcess = ServerProvider.createStartProcessBuilder(redisConf).start();
+            startPrintErrors();
+            isServerStarted();
+            active = true;
+            System.out.println("redis server started at port : " + port);
+        } catch (IOException e) {
+            throw new EmbeddedRedisException("Failed to start redis server ", e);
+        }
     }
 
     public synchronized void stop() throws EmbeddedRedisException {
-        ServerProvider.stop(this);
+        if (active) {
+            try {
+                stopPrintErrors();
+                ServerProvider.createStopProcessBuilder(port).start();
+                redisProcess.waitFor();
+                active = false;
+                if (isTempServer) {
+                    System.out.println("delete temp path of port " + port + ": " + redisConf.getParentFile().getAbsolutePath());
+                    FileUtils.deleteDirectory(redisConf.getParentFile());
+                }
+                System.out.println("redis server stopped.");
+            } catch (IOException | InterruptedException e) {
+                throw new EmbeddedRedisException("failed to stop server", e);
+            }
+        }
     }
 
-    public void isServerStarted() throws IOException {
+    private void isServerStarted() throws IOException {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(redisProcess.getInputStream()))) {
             String outputLine;
             do {
@@ -50,25 +84,25 @@ public class RedisServer {
         }
     }
 
-    public void startPrintErrors() {
+    private void startPrintErrors() {
         final InputStream errorStream = redisProcess.getErrorStream();
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(errorStream));
-        Runnable printErrorTask = new PrintReaderTask(reader);
+        Runnable printErrorTask = new PrintTask(reader);
         printErrorExecutor = Executors.newSingleThreadExecutor();
         printErrorExecutor.submit(printErrorTask);
     }
 
-    public void stopPrintErrors() {
+    private void stopPrintErrors() {
         if (printErrorExecutor != null && !printErrorExecutor.isShutdown()) {
             printErrorExecutor.shutdown();
         }
     }
 
-    private static class PrintReaderTask implements Runnable {
+    private static class PrintTask implements Runnable {
         private final BufferedReader reader;
 
-        private PrintReaderTask(BufferedReader reader) {
+        private PrintTask(BufferedReader reader) {
             this.reader = reader;
         }
 
@@ -96,36 +130,7 @@ public class RedisServer {
         return active;
     }
 
-    public void setActive(Boolean active) {
-        this.active = active;
-    }
-
-    public File getRedisConf() {
-        return redisConf;
-    }
-
-    public void setRedisConf(File redisConf) {
-        this.redisConf = redisConf;
-    }
-
     public int getPort() {
         return port;
     }
-
-    public void setPort(int port) {
-        this.port = port;
-    }
-
-    public Process getRedisProcess() {
-        return redisProcess;
-    }
-
-    public void setRedisProcess(Process redisProcess) {
-        this.redisProcess = redisProcess;
-    }
-
-    public boolean isTempServer() {
-        return isTempServer;
-    }
-
 }

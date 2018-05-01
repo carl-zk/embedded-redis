@@ -1,30 +1,68 @@
 package redis.embedded;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import redis.clients.jedis.Jedis;
 
-import java.util.concurrent.TimeUnit;
+import java.io.File;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class ServerServerTest {
+public class RedisServerTest {
 
     private RedisServer redisServer;
 
-    @Test//(timeout = 1500L)
-    public void testSimpleRun() throws Exception {
-        redisServer = new RedisServer();
-        redisServer.start();
-        Jedis jedis = new Jedis("localhost", redisServer.getPort());
-        jedis.set("a", "a");
-        System.out.println(jedis.get("a"));
-        TimeUnit.SECONDS.sleep(1);
+    @Before
+    public void before() {
+        System.out.println("start test...");
+    }
+
+    @After
+    public void after() {
         redisServer.stop();
     }
 
-    @Test(expected = RuntimeException.class)
-    public void shouldNotAllowMultipleRunsWithoutStop() throws Exception {
+    private String value = "AAAAA";
+
+    public String doSomething() {
+        redisServer.start();
+        Jedis jedis = new Jedis("localhost", redisServer.getPort());
+        jedis.set("AAAAA", value);
+        String val = jedis.get("AAAAA");
+        System.out.println(val);
+        return val;
+    }
+
+    @Test
+    public void emptyConstructor() {
+        redisServer = new RedisServer();
+        assert value.equals(doSomething());
+    }
+
+    @Test
+    public void portConstructor() {
+        redisServer = new RedisServer(7799);
+        assert value.equals(doSomething());
+    }
+
+    @Test
+    public void confAndPortConstructor() {
+        redisServer = new RedisServer(new File("/Users/hero/Downloads/redis/redis.conf"), 6380);
+        assert value.equals(doSomething());
+    }
+
+    @Test(expected = EmbeddedRedisException.class)
+    public void notExistsConfConstructor() {
+        redisServer = new RedisServer(new File("/not/exists/redis.conf"), 6380);
+        assert value.equals(doSomething());
+    }
+
+    @Test(expected = EmbeddedRedisException.class)
+    public void shouldNotAllowMultipleRunsWithoutStop() {
         try {
             redisServer = new RedisServer();
             redisServer.start();
@@ -34,39 +72,14 @@ public class ServerServerTest {
         }
     }
 
-    @Test
-    public void shouldAllowSubsequentRuns() throws Exception {
+    @Test(expected = EmbeddedRedisException.class)
+    public void shouldAllowSubsequentRuns() {
         redisServer = new RedisServer();
         redisServer.start();
         redisServer.stop();
 
         redisServer.start();
         redisServer.stop();
-
-        redisServer.start();
-        redisServer.stop();
-    }
-
-    @Test
-    public void testSimpleOperationsAfterRun() throws Exception {
-//		redisServer = new RedisServer();
-//		redisServer.start();
-//
-//		JedisPool pool = null;
-//		Jedis jedis = null;
-//		try {
-//			pool = new JedisPool("localhost", 6379);
-//			jedis = pool.getResource();
-//			jedis.mset("abc", "1", "def", "2");
-//
-//			assertEquals("1", jedis.mget("abc").get(0));
-//			assertEquals("2", jedis.mget("def").get(0));
-//			assertEquals(null, jedis.mget("xyz").get(0));
-//		} finally {
-//			if (jedis != null)
-//				pool.returnResource(jedis);
-//			redisServer.stop();
-//		}
     }
 
     @Test

@@ -10,17 +10,11 @@ import java.io.IOException;
 
 public class OsArch2Server {
 
-    public static final File REDIS_CONF;
-
     static {
         try {
             OsArch currentOsArch = OsArch.osArchType(OsArchitecture.currentOsArch());
 
             File tempDir = FileUtils.createTempDir();
-            System.out.println("REDIS_CONF path: " + tempDir.getAbsolutePath());
-            REDIS_CONF = FileUtils.extractFileFromJar(tempDir, "redis-6379.conf");
-
-            tempDir = FileUtils.createTempDir();
             System.out.println("REDIS_SERVER path: " + tempDir.getAbsolutePath());
 
             switch (currentOsArch) {
