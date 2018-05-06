@@ -41,4 +41,6 @@ Licensed under the Apache License, Version 2.0
 ## Changelog
 support jdk 1.8+ 
 
+redis server 4.0.9
+
 platform MAC x64; Linux/Unix x64 
