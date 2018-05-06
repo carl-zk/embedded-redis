@@ -9,6 +9,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 public class OsArchitecture {
+    private final OS os;
+    private final Architecture arch;
+
+    private static final OsArchitecture CURRENT_OS_ARCH = detect();
 
     public static OsArchitecture currentOsArch() {
         return CURRENT_OS_ARCH;
@@ -123,9 +127,4 @@ public class OsArchitecture {
         result = 31 * result + arch.hashCode();
         return result;
     }
-
-    private final OS os;
-    private final Architecture arch;
-
-    private static final OsArchitecture CURRENT_OS_ARCH = detect();
 }
