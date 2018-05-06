@@ -39,5 +39,6 @@ Licensed under the Apache License, Version 2.0
  * Carl-zk ([@carl-zk](https://github.com/carl-zk/embedded-redis))
 
 ## Changelog
-support jdk 1.8+
+support jdk 1.8+ 
+
 platform MAC x64; Linux/Unix x64 
