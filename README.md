@@ -11,12 +11,14 @@ redisServer.start();
 // do some work
 redisServer.stop();
 ```
-2.
+
+2. 
 ```java
 RedisServer redisServer = new RedisServer(7799);
 ```
 above two will create a temp redis server, nothing will leave when server stop.
-3.
+
+3. 
 ```java
 redisServer = new RedisServer(new File("/path/to/redis.conf"), 6380);
 ```
