@@ -20,7 +20,7 @@ above two will create a temp redis server, nothing will leave when server stop.
 ```java
 redisServer = new RedisServer(new File("/path/to/redis.conf"), 6380);
 ```
-assign your own redis.conf, will keep your dump.db when server stop. 
+assign your own redis.conf, will keep your dump.rdb when server stop. 
 
 
 ## License
