@@ -11,12 +11,14 @@ redisServer.start();
 // do some work
 redisServer.stop();
 ```
-2.
+
+2. 
 ```java
 RedisServer redisServer = new RedisServer(7799);
 ```
 above two will create a temp redis server, nothing will leave when server stop.
-3.
+
+3. 
 ```java
 redisServer = new RedisServer(new File("/path/to/redis.conf"), 6380);
 ```
@@ -37,5 +39,8 @@ Licensed under the Apache License, Version 2.0
  * Carl-zk ([@carl-zk](https://github.com/carl-zk/embedded-redis))
 
 ## Changelog
-support jdk 1.8+
+support jdk 1.8+ 
+
+redis server 4.0.9
+
 platform MAC x64; Linux/Unix x64 
